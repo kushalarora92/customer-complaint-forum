@@ -1,0 +1,156 @@
+<div class="app-home-container">
+  <div class="float-right" *ngIf="!isAgent">
+      <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#newComplaintModal" complaintId="test">
+        <span style="font-size:1.2rem">+</span> Add Complaint
+      </button>
+  </div>
+  <h2>Complains List</h2>
+
+  <div class="table-responsive">
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>S.No</th>
+          <th *ngIf="isAgent">Email</th>
+          <th>Heading</th>
+          <th>Status</th>
+          <th>Date Created</th>
+          <th>Date Updated</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+
+      <tbody *ngIf="complaints">
+        <ng-container *ngIf="complaints.length > 0">
+          <tr *ngFor='let complaint of complaints; index as i'>
+            <td>{{complaints.length - i}}</td>
+            <td *ngIf="isAgent"> {{complaint.created_by?.email}} </td>
+            <td>{{complaint.heading}}</td>
+            <td>{{complaint.status}}</td>
+            <td>{{complaint.date_created | date : 'short'}}</td>
+            <td>{{complaint.date_updated | date : 'short'}}</td>   
+            <td>
+              <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#complaintDetailsModal" complaintId="test" (click)="onViewComplaintClick(complaint)">
+                View
+              </button>
+            </td>      
+          </tr>
+        </ng-container>
+      </tbody>
+    </table>
+
+    <div *ngIf="complaints && complaints.length === 0" class="text-center mt-3">
+        <strong>No Complaints exist.</strong>
+      </div>
+
+    <div *ngIf="!complaints" class="text-center mt-3">
+      <strong>Loading Data...</strong>
+    </div>
+  </div>
+</div>
+
+
+<div class="modal fade" id="newComplaintModal" tabindex="-1" role="dialog" aria-labelledby="newComplaintModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="newComplaintModalLabel">Add New Complaint</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="complaintform">
+          <form [formGroup]="complaintForm">
+            <div class="form-group">
+              <label for="heading">Heading</label>
+              <input type="text" formControlName="heading" class="form-control" [ngClass]="{ 'is-invalid': submitted && f.heading.errors }" />
+              <div *ngIf="submitted && f.heading.errors" class="invalid-feedback">
+                <div *ngIf="f.heading.errors.required">Heading is required</div>
+              </div>
+            </div>
+            <div class="form-group">
+                <label for="description">Description</label>
+                <textarea rows="2" formControlName="description" class="form-control" [ngClass]="{ 'is-invalid': submitted && f.description.errors }" > </textarea>
+                <div *ngIf="submitted && f.description.errors" class="invalid-feedback">
+                  <div *ngIf="f.description.errors.required">Description is required</div>
+                </div>
+            </div>
+          </form>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <button class="btn btn-primary" (click)="onComplaintFormSubmit()">Submit</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<div class="modal fade" id="complaintDetailsModal" tabindex="-1" role="dialog" aria-labelledby="complaintDetailsModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content" *ngIf="selectedComplaint">
+        <div class="modal-header">
+          <h5 class="modal-title" id="complaintDetailsModalLabel">{{selectedComplaint.heading}}</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="status mt-1">
+            <div><strong>Status: {{selectedComplaint.status}}</strong></div>
+            
+            <div *ngIf="isAgent">
+              <hr>
+              <div><strong>Change Status:</strong></div>
+              <div>
+                <button class="btn btn-sm btn-primary float-right" (click)="onUpdateStatusClick(updatedStatus)"> Update Status</button>
+                <select [(ngModel)]="updatedStatus">
+                  <option value="new">New</option>
+                  <option value="inprogress">In Progress</option>
+                  <option value="closed">Closed</option>
+                </select>
+              </div>
+            </div>
+          </div>
+  
+          <hr>
+          
+          <div class="description mt-1">
+            <div><strong>Description</strong></div>
+            <textarea name="descriptionText" id="descriptionText" rows="2" class="w-100 rounded background-grey p-1" disabled [ngModel]="selectedComplaint.description"></textarea>
+          </div>
+  
+          <hr>
+  
+          <div class="new_comment mt-1">
+            <input type="text" class="w-100 background rounded p-1" [(ngModel)]="addedCommentText" placeholder="Add a comment"/>
+  
+            <div class="text-right mt-1">
+              <button class="btn btn-sm btn-primary" (click)="onCommentAddition(addedCommentText)"> Add Comment</button>
+            </div>
+          </div>
+  
+          <hr>
+  
+          <div class="comments mt-1">
+              <div><strong>{{selectedComplaint.comments.length}} Comments</strong></div>
+  
+              <div *ngFor="let comment of selectedComplaint.comments">
+                <hr>
+                <div class="w-100 background-grey p-1 rounded">{{comment.text}}</div>
+  
+                <div>
+                  <div class="float-right">{{comment.date_created | date : 'short'}}</div>
+                  <div>{{comment.created_by?.email}}</div>
+                </div>
+              </div>
+          </div>
+  
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>

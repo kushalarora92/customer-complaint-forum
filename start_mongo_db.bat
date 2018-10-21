@@ -1,0 +1,3 @@
+echo off
+echo Starting Mongo Db on Windows...
+"C:\Program Files\MongoDB\Server\4.0\bin\mongod.exe" --dbpath="c:\mongo_data\db"
